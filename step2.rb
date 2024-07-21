@@ -1,4 +1,3 @@
-
 omni_deck = [
   { mark: 'ハート', number: 1, power: 13 },
   { mark: 'ハート', number: 13, power: 12 },
@@ -64,6 +63,7 @@ class Player
     @draw = {}
     @score = 0
   end
+
 end
 
 player1 = Player.new('たろう')
@@ -87,8 +87,10 @@ end
 
 deal_omni_deck(omni_deck, players)
 
-def open_card(players)
-  stuck_score = 0
+stuck_score = 0
+
+def open_card(players, stuck_score)
+
   players.map do |player|
     d = rand(player.deck.length)
     puts "#{player.name}のカードは#{player.deck[d][:mark]}の#{player.deck[d][:number]}です。"
@@ -98,32 +100,53 @@ def open_card(players)
 
   max_power = players.map { |player| player.draw[:power] }.max
   selected_players = players.select { |player| player.draw[:power] == max_power }
-  stuck_score += players.length
-
-
 
   if selected_players.length == 1
-    selected_players[0].score += stuck_score
-    stuck_score = players.length
+    selected_players[0].score += stuck_score + players.length
+    stuck_score = 0
     puts "#{selected_players[0].name}の勝利です"
-    return
-  elsif selected_players.length > 1
+    nil
+  else
     puts '引き分け'
     stuck_score += players.length
+  # elsif selected_players.length > 1
+  #   puts '引き分け'
+  #   stuck_score += players.length
   end
-
+  stuck_score
 end
+#誰かの手札がなくなるまでカードを出し続ける
+# while player1.deck.length > 0 && player2.deck.length > 0
+#   return if player1.deck.length == 0 || player2.deck.length == 0
 
+#   # open_card(players)
+#   stuck_score = open_card(players, stuck_score)
+# end
 while player1.deck.length > 0 && player2.deck.length > 0
-  if player1.deck.length ==0 || player2.deck.length == 0
-    return
-  else
-    open_card(players)
-  end
+  stuck_score = open_card(players, stuck_score)
 end
 
+#対戦結果の処理
+def result_game(players)
+  ranking_array = []
+  players.map do |player|
 
-puts "プレイヤー1の手札の枚数は#{player1.score}枚です。プレイヤー2の手札の枚数は#{player2.score}枚です"
-# puts "プレイヤー1が1位、プレイヤー2が2位です。"
+    puts "#{player.name}の手札の枚数は#{player.score}枚です。"
+    result_hash = {name: player.name, score: player.score}
+    ranking_array.push(result_hash)
+  end
 
-puts "戦争を終了します"
+  highscore_ranking = ranking_array.sort_by { |hash |-hash[:score] }
+
+  if highscore_ranking.length > 1 && highscore_ranking[0][:score] == highscore_ranking[1][:score]
+    puts "戦争は引き分けです"
+    return
+  end
+
+  highscore_ranking.each_with_index do |hash, index|
+
+    puts "#{hash[:name]}が#{index + 1}位 #{hash[:score]}点"
+  end
+  puts '戦争を終了します'
+end
+result_game(players)
