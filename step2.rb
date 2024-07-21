@@ -63,22 +63,25 @@ class Player
     @draw = {}
     @score = 0
   end
-
 end
 
 player1 = Player.new('たろう')
 player2 = Player.new('じろう')
 players = [player1, player2]
 
+#引き分けの際に持ち越しになるスコアの初期設定
+stuck_score = 0
+
 # プレイヤーを配列にする
 puts '戦争！'
 
+#山札を配る処理
 def deal_omni_deck(omni_deck, players)
   # プレイヤーの数
   num = players.length
   # デッキをよく切る！
   shuffle_deck = omni_deck.to_a.shuffle
-
+#各プレイヤーの手札に追加
   shuffle_deck.each_with_index do |card, index|
     player_index = index % num
     players[player_index].deck << card
@@ -87,8 +90,8 @@ end
 
 deal_omni_deck(omni_deck, players)
 
-stuck_score = 0
 
+#互いに一枚カードを出す処理
 def open_card(players, stuck_score)
 
   players.map do |player|
@@ -109,19 +112,13 @@ def open_card(players, stuck_score)
   else
     puts '引き分け'
     stuck_score += players.length
-  # elsif selected_players.length > 1
-  #   puts '引き分け'
-  #   stuck_score += players.length
+
   end
   stuck_score
 end
-#誰かの手札がなくなるまでカードを出し続ける
-# while player1.deck.length > 0 && player2.deck.length > 0
-#   return if player1.deck.length == 0 || player2.deck.length == 0
 
-#   # open_card(players)
-#   stuck_score = open_card(players, stuck_score)
-# end
+#誰かの手札がなくなるまでカードを出し続ける
+
 while player1.deck.length > 0 && player2.deck.length > 0
   stuck_score = open_card(players, stuck_score)
 end
@@ -137,14 +134,13 @@ def result_game(players)
   end
 
   highscore_ranking = ranking_array.sort_by { |hash |-hash[:score] }
-
-  if highscore_ranking.length > 1 && highscore_ranking[0][:score] == highscore_ranking[1][:score]
+  #スコアが同じ場合は引き分けとなる
+  if highscore_ranking[0][:score] == highscore_ranking[1][:score]
     puts "戦争は引き分けです"
     return
   end
 
   highscore_ranking.each_with_index do |hash, index|
-
     puts "#{hash[:name]}が#{index + 1}位 #{hash[:score]}点"
   end
   puts '戦争を終了します'
